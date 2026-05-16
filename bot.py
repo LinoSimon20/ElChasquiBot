@@ -292,6 +292,8 @@ async def ayuda(
         "/vincular usuarioGithub\n\n"
         "- Para obtener los mensajes recopilados de los Issues de tus proyectos de GitHub escribe:\n"
         "/mis_comentarios\n\n"
+        "- Para obtener las Issues asignadas escribe:\n"
+        "/mis_issues\n\n"
         "- Para desvincular tu cuenta de GitHub escribe:\n"
         "/desvincular\n\n"
         "¡Gracias por usar ChasquiBot!\n"
