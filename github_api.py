@@ -138,7 +138,7 @@ async def get_issues_asignados(
 
     issues = []
 
-    for item in data["items"][:5]:
+    for item in data["items"]:
 
         issues.append({
             "title": item["title"],

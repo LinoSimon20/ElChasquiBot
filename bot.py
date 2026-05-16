@@ -31,6 +31,39 @@ logging.basicConfig(
     level=logging.INFO
 )
 
+async def enviar_mensajes_largos(
+    update,
+    text,
+    limit=4000
+):
+
+    partes = []
+
+    while len(text) > limit:
+
+        indice_dividido = text.rfind(
+            "\n",
+            0,
+            limit
+        )
+
+        if indice_dividido == -1:
+            indice_dividido = limit
+
+        partes.append(
+            text[:indice_dividido]
+        )
+
+        text = text[indice_dividido:]
+
+    partes.append(text)
+
+    for parte in partes:
+
+        await update.message.reply_text(
+            parte
+        )
+
 async def start(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
@@ -158,7 +191,7 @@ async def mis_comentarios(
     
     contador_mensajes = 0
     
-    for item in comentarios[:5]:
+    for item in comentarios:
 
         mensaje = (       
             f"📦 Repo: {item['repo']}\n\n"
@@ -227,7 +260,8 @@ async def mis_issues(
             f"🔗 {issue['url']}\n\n"
         )
 
-    await update.message.reply_text(
+    await enviar_mensajes_largos(
+        update,
         mensaje
     )
 
