@@ -252,6 +252,8 @@ async def mis_issues(
 
     mensaje = "Issues asignadas:\n\n"
 
+    contador = 0
+
     for issue in issues:
 
         mensaje += (
@@ -260,11 +262,16 @@ async def mis_issues(
             f"🔗 {issue['url']}\n\n"
         )
 
+        contador += 1
+
     await enviar_mensajes_largos(
         update,
         mensaje
     )
 
+    await update.message.reply_text(
+        f"Tienes un total de: {contador} issues asignadas."
+    )
 
 async def desvincular(
     update: Update,
