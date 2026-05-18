@@ -88,6 +88,18 @@ async def vincular(
     context: ContextTypes.DEFAULT_TYPE
 ):
 
+    telegram_id = update.effective_user.id
+
+    usuario_existente = obtener_usuario(telegram_id)
+
+    if usuario_existente:
+
+        await update.message.reply_text(
+            f"Ya tienes una cuenta vinculada: {usuario_existente}.\n"
+        )
+
+        return
+
     if len(context.args) != 1:
 
         await update.message.reply_text(
@@ -109,8 +121,6 @@ async def vincular(
         )
 
         return
-
-    telegram_id = update.effective_user.id
 
     guardar_usuario(
         telegram_id,
@@ -217,6 +227,16 @@ async def mis_issues(
 ):
 
     telegram_id = update.effective_user.id
+
+    cooldown = verificar_cooldown(telegram_id)
+
+    if cooldown > 0:
+
+        await update.message.reply_text(
+            f"Espera {cooldown}s antes de usar este comando nuevamente."
+        )
+
+        return
 
     usuario = obtener_usuario(
         telegram_id
