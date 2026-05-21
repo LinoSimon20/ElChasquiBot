@@ -28,8 +28,17 @@ load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 logging.basicConfig(
-    level=logging.INFO
+    level=logging.INFO,
+    format="[%(asctime)s] %(levelname)s | %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
 )
+
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
+def log_accion(usuario, accion):
+    logging.info(
+        f"{accion} ejecutada por: {usuario}"
+    )
 
 async def enviar_mensajes_largos(
     update,
@@ -82,7 +91,6 @@ async def start(
         "/ayuda"
     )
 
-
 async def vincular(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
@@ -127,15 +135,12 @@ async def vincular(
         usuario
     )
 
-    logging.info(
-        f"Usuario vinculado: {usuario}"
-    )
+    log_accion(usuario, "/vincular")
 
     await update.message.reply_text(
         f"Realizado. Tu usuario {usuario}, ha sido vinculado :).\n"
         "Ahora puedes usar /mis_comentarios :)"
     )
-
 
 async def mis_comentarios(
     update: Update,
@@ -171,9 +176,7 @@ async def mis_comentarios(
         usuario
     )
 
-    logging.info(
-        f"Consulta comentarios: {usuario}"
-    )
+    log_accion(usuario, "/mis_comentarios")
 
     if comentarios == "rate_limit":
         
@@ -220,7 +223,6 @@ async def mis_comentarios(
         f"Tienes un total de: {contador_mensajes} comentarios recientes."
     )
 
-
 async def mis_issues(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
@@ -241,6 +243,8 @@ async def mis_issues(
     usuario = obtener_usuario(
         telegram_id
     )
+
+    log_accion(usuario, "/mis_issues")
 
     if not usuario:
 
@@ -298,14 +302,45 @@ async def desvincular(
     context: ContextTypes.DEFAULT_TYPE
 ):
 
+    if len(context.args) != 1:
+
+        await update.message.reply_text(
+            "Uso:\n/desvincular usuarioGitHub"
+        )
+
+        return
+
     telegram_id = update.effective_user.id
+
+    usuario = obtener_usuario(
+        telegram_id
+    )
+
+    if not usuario:
+
+        await update.message.reply_text(
+            "No tienes ninguna cuenta vinculada."
+        )
+
+        return
+    
+    usuario_ingresado = context.args[0]
+
+    if usuario_ingresado != usuario:
+
+        await update.message.reply_text(
+            "El usuario ingresado no coincide con el usuario vinculado."
+        )
+
+        return
+
+    log_accion(usuario, "/desvincular")
 
     eliminar_usuario(telegram_id)
 
     await update.message.reply_text(
         "Realizado. Tu cuenta ha sido desvinculada con exito! :)."
     )
-
 
 async def ayuda(
     update: Update,
@@ -381,11 +416,10 @@ def main():
         )
     )
 
-    print("Iniciando ElChasquiBot...")
-    time.sleep(1)  # Simula un retraso de 1 segundo
-    print("ElChasquiBot iniciado...")
+    logging.info("Iniciando ElChasquiBot...")
+    time.sleep(1)
+    logging.info("ElChasquiBot iniciado...")
     app.run_polling()
-
 
 if __name__ == "__main__":
     main()
