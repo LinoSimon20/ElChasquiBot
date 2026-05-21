@@ -42,7 +42,7 @@ async def get_user_comentarios(usuario):
 
     cached = get_cache(cache_key)
 
-    if cached:
+    if cached is not None:
         return cached
     
     try:
@@ -108,9 +108,15 @@ async def get_user_comentarios(usuario):
     return comentarios
 
 
-async def get_issues_asignados(
-        usuario
-):
+async def get_issues_asignados(usuario):
+    
+    cache_key = f"issues:{usuario}"
+
+    cached = get_cache(cache_key)
+
+    if cached is not None:
+        return cached
+
     url = (
         "https://api.github.com/search/issues"
         f"?q=assignee:{usuario}+is:open"
@@ -147,4 +153,62 @@ async def get_issues_asignados(
             "url": item["html_url"]
         })
 
+    set_cache(cache_key, issues)
+
     return issues
+
+async def get_user_prs_mergeados(usuario):
+
+    cache_key = f"prs:{usuario}"
+
+    cached = get_cache(cache_key)
+
+    if cached is not None:
+        return cached
+    
+    url = (
+        "https://api.github.com/search/issues"
+        f"?q=type:pr+author:{usuario}"
+    )
+
+    try:
+
+        async with httpx.AsyncClient() as client:
+
+            response = await client.get(
+                url,
+                headers=HEADERS,
+                timeout=10
+            )
+
+    except httpx.RequestError:
+
+        return None
+    
+    if response.status_code != 200:
+
+        return None
+    
+    data = response.json()
+
+    prs_mergeados = []
+
+    for item in data["items"]:
+
+        pull_request = item.get("pull_request", {})
+
+        if (
+            item["state"] == "closed"
+            and pull_request.get("merged_at")
+        ):
+            
+            prs_mergeados.append({
+                "title": item["title"],
+                "repo": item["repository_url"]
+                    .split("repos/")[-1],
+                "url": item["html_url"]
+            })
+
+    set_cache(cache_key, prs_mergeados)
+
+    return prs_mergeados

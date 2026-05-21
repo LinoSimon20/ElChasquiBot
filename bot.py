@@ -20,7 +20,8 @@ from database import (
 from github_api import (
     github_user_exists,
     get_user_comentarios,
-    get_issues_asignados
+    get_issues_asignados,
+    get_user_prs_mergeados
 )
 
 load_dotenv()
@@ -30,7 +31,8 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 logging.basicConfig(
     level=logging.INFO,
     format="[%(asctime)s] %(levelname)s | %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+    datefmt="%Y-%m-%d %H:%M:%S",
+    force=True
 )
 
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -87,6 +89,8 @@ async def start(
         "/mis_comentarios\n\n"
         "Para obtener las Issues asignadas escribe:\n"
         "/mis_issues\n\n"
+        "Para obtener tu estado escribe:\n"
+        "/mi_estado\n\n"
         "Para mas informacion escribe:\n"
         "/ayuda"
     )
@@ -244,8 +248,6 @@ async def mis_issues(
         telegram_id
     )
 
-    log_accion(usuario, "/mis_issues")
-
     if not usuario:
 
         await update.message.reply_text(
@@ -253,6 +255,8 @@ async def mis_issues(
         )
 
         return
+
+    log_accion(usuario, "/mis_issues")
 
     issues = await get_issues_asignados(
         usuario
@@ -296,6 +300,54 @@ async def mis_issues(
     await update.message.reply_text(
         f"Tienes un total de: {contador} issues asignadas."
     )
+
+async def mi_estado(
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE
+):
+    
+    telegram_id = update.effective_user.id
+
+    cooldown = verificar_cooldown(telegram_id)
+
+    if cooldown > 0:
+
+        await update.message.reply_text(
+            f"Espera {cooldown}s antes de usar este comando nuevamente."
+        )
+
+        return
+    
+    usuario = obtener_usuario(telegram_id)
+
+    if not usuario:
+
+        await update.message.reply_text(
+            "Primero usa /vincular para ver tu estado."
+        )
+
+        return
+    
+    log_accion(usuario, "/mi_estado")
+
+    issues = await get_issues_asignados(usuario)
+    total_issues = len(issues) if issues else 0
+
+    comentarios = await get_user_comentarios(usuario)
+    total_comentarios = len(comentarios) if comentarios else 0
+
+    prs = await get_user_prs_mergeados(usuario)
+    total_prs = len(prs) if prs else 0
+
+    mensaje = (
+        f"🏆 Estado de {usuario}:\n\n"
+        f"🐛 Issues asignadas: {total_issues}\n"
+        f"💬 Comentarios: {total_comentarios}\n"
+        f"🔀 Pull Requests mergeados: {total_prs}\n"
+    )
+
+    await update.message.reply_text(mensaje)
+
 
 async def desvincular(
     update: Update,
@@ -356,6 +408,8 @@ async def ayuda(
         "/mis_comentarios\n\n"
         "- Para obtener las Issues asignadas escribe:\n"
         "/mis_issues\n\n"
+        "- Para obtener tu estado escribe:\n"
+        "/mi_estado\n\n"
         "- Para desvincular tu cuenta de GitHub escribe:\n"
         "/desvincular\n\n"
         "¡Gracias por usar ChasquiBot!\n"
@@ -399,6 +453,13 @@ def main():
         CommandHandler(
             "mis_issues",
             mis_issues
+        )
+    )
+
+    app.add_handler(
+        CommandHandler(
+            "mi_estado",
+            mi_estado
         )
     )
 
