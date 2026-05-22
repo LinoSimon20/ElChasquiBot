@@ -206,25 +206,31 @@ async def mis_comentarios(
 
         return
     
-    contador_mensajes = 0
-    
+    mensaje = "💬 Comentarios recientes:\n\n"
+
+    contador_comentarios = 0
+
     for item in comentarios:
 
-        mensaje = (       
+        mensaje += (
+            "━━━━━━━━━━━━━━━━━━━━\n\n"
             f"📦 Repo: {item['repo']}\n\n"
             f"📝 {item['title']}\n\n"
             f"💬 {item['comment']}\n\n"
-            f"🔗 {item['url']}"
+            f"🔗 {item['url']}\n\n"
         )
 
-        contador_mensajes +=1
+        contador_comentarios += 1
 
-        await update.message.reply_text(
-            mensaje
-        )
+    mensaje += (
+        "━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"📊 Total de comentarios: "
+        f"{contador_comentarios}"
+    )
 
-    await update.message.reply_text(
-        f"Tienes un total de: {contador_mensajes} comentarios recientes."
+    await enviar_mensajes_largos(
+        update,
+        mensaje
     )
 
 async def mis_issues(
@@ -278,27 +284,30 @@ async def mis_issues(
 
         return
 
-    mensaje = "Issues asignadas:\n\n"
+    mensaje = "🐛 Issues asignadas:\n\n"
 
-    contador = 0
+    contador_issues = 0
 
     for issue in issues:
 
         mensaje += (
-            f"📦 {issue['repo']}\n"
-            f"🐛 {issue['title']}\n"
+            "━━━━━━━━━━━━━━━━━━━━\n\n"
+            f"📦 Repo: {issue['repo']}\n\n"
+            f"🐛 {issue['title']}\n\n"
             f"🔗 {issue['url']}\n\n"
         )
 
-        contador += 1
+        contador_issues += 1
+
+    mensaje += (
+        "━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"📊 Total de issues asignadas: "
+        f"{contador_issues}"
+    )
 
     await enviar_mensajes_largos(
         update,
         mensaje
-    )
-
-    await update.message.reply_text(
-        f"Tienes un total de: {contador} issues asignadas."
     )
 
 async def mi_estado(
@@ -341,13 +350,14 @@ async def mi_estado(
 
     mensaje = (
         f"🏆 Estado de {usuario}:\n\n"
-        f"🐛 Issues asignadas: {total_issues}\n"
-        f"💬 Comentarios: {total_comentarios}\n"
-        f"🔀 Pull Requests mergeados: {total_prs}\n"
+        "━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"🐛 Issues asignadas: {total_issues}\n\n"
+        f"💬 Comentarios: {total_comentarios}\n\n"
+        f"🔀 Pull Requests mergeados: {total_prs}\n\n"
+        "━━━━━━━━━━━━━━━━━━━━\n\n"
     )
 
     await update.message.reply_text(mensaje)
-
 
 async def desvincular(
     update: Update,
@@ -398,6 +408,14 @@ async def ayuda(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
+
+    telegram_id = update.effective_user.id
+
+    usuario = obtener_usuario(
+        telegram_id
+    ) or "Desconocido"
+
+    log_accion(usuario, "/ayuda")
 
     await update.message.reply_text(
         "Ayuda de ChasquiBot:\n\n"
