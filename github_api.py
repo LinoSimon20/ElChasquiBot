@@ -7,8 +7,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-logging.basicConfig(level=logging.INFO)
-
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 HEADERS = {
@@ -16,17 +14,27 @@ HEADERS = {
     "Accept": "application/vnd.github+json"
 }
 
-
 async def github_user_exists(usuario):
 
     url = f"https://api.github.com/users/{usuario}"
 
-    async with httpx.AsyncClient() as client:
+    try:
 
-        response = await client.get(
-            url,
-            headers=HEADERS
+        async with httpx.AsyncClient() as client:
+
+            response = await client.get(
+                url,
+                headers=HEADERS,
+                timeout=10
+            )
+
+    except httpx.RequestError as error:
+
+        logging.error(
+            f"GitHub connection error: {error}"
         )
+
+        return False
 
     return response.status_code == 200
 
@@ -51,7 +59,8 @@ async def get_user_comentarios(usuario):
 
             response = await client.get(
                 url,
-                headers=HEADERS
+                headers=HEADERS,
+                timeout=10
             )
 
     except httpx.RequestError as error:
@@ -60,8 +69,22 @@ async def get_user_comentarios(usuario):
         )
         return None
 
+    if response.status_code == 403:
+
+        logging.warning(
+            f"GitHub API rate limit reached."
+        )
+
+        return "rate_limit"
+    
     if response.status_code != 200:
-        return []
+        
+        logging.error(
+            f"GitHub API returned status "
+            f"{response.status_code}"
+        )
+        
+        return None
 
     events = response.json()
 
@@ -132,11 +155,28 @@ async def get_issues_asignados(usuario):
                 timeout=10
             )
 
-    except httpx.RequestError:
+    except httpx.RequestError as error:
+
+        logging.error(
+            f"GitHub issues request failed: {error}"
+        )
     
         return None
     
+    if response.status_code == 403:
+
+        logging.warning(
+            f"GitHub API rate limit reached."
+        )
+
+        return "rate_limit"
+    
     if response.status_code != 200:
+        
+        logging.error(
+            f"GitHub API returned status "
+            f"{response.status_code}"
+        )
         
         return None
     
@@ -181,12 +221,29 @@ async def get_user_prs_mergeados(usuario):
                 timeout=10
             )
 
-    except httpx.RequestError:
+    except httpx.RequestError as error:
+
+        logging.error(
+            f"GitHub PRs request failed: {error}"
+        )
 
         return None
     
-    if response.status_code != 200:
+    if response.status_code == 403:
 
+        logging.warning(
+            f"GitHub API rate limit reached."
+        )
+
+        return "rate_limit"
+    
+    if response.status_code != 200:
+        
+        logging.error(
+            f"GitHub API returned status "
+            f"{response.status_code}"
+        )
+        
         return None
     
     data = response.json()
