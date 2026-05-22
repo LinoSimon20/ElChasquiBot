@@ -9,6 +9,11 @@ load_dotenv()
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
+if not GITHUB_TOKEN:
+    raise ValueError(
+        "GITHUB_TOKEN no encontrado en variables de entorno."
+    )
+
 HEADERS = {
     "Authorization": f"Bearer {GITHUB_TOKEN}",
     "Accept": "application/vnd.github+json"
@@ -72,7 +77,7 @@ async def get_user_comentarios(usuario):
     if response.status_code == 403:
 
         logging.warning(
-            f"GitHub API rate limit reached."
+            "GitHub API rate limit reached."
         )
 
         return "rate_limit"
@@ -81,26 +86,40 @@ async def get_user_comentarios(usuario):
         
         logging.error(
             f"GitHub API returned status "
-            f"{response.status_code}"
+            f"{response.status_code}: "
+            f"{response.text}"
         )
         
         return None
 
-    events = response.json()
+    try:
+
+        events = response.json()
+
+    except ValueError as error:
+
+        logging.error(
+            f"Invalid GitHub JSON response: {error}"
+        )
+
+        return None
 
     comentarios = []
 
     for event in events:
 
-        if event["type"] not in [
+        if event.get("type") not in [
             "IssueCommentEvent",
             "PullRequestReviewCommentEvent"
         ]:
             continue
 
-        repo = event["repo"]["name"]
+        repo = (
+            event.get("repo", {})
+            .get("name", "Repositorio desconocido")
+        )
 
-        payload = event["payload"]
+        payload = event.get("payload", {})
 
         comment_body = (
             payload.get("comment", {})
@@ -166,7 +185,7 @@ async def get_issues_asignados(usuario):
     if response.status_code == 403:
 
         logging.warning(
-            f"GitHub API rate limit reached."
+            "GitHub API rate limit reached."
         )
 
         return "rate_limit"
@@ -175,22 +194,35 @@ async def get_issues_asignados(usuario):
         
         logging.error(
             f"GitHub API returned status "
-            f"{response.status_code}"
+            f"{response.status_code}: "
+            f"{response.text}"
         )
         
         return None
     
-    data = response.json()
+    try:
+        
+        data = response.json()
+
+    except ValueError as error:
+
+        logging.error(
+            f"Invalid GitHub JSON response: {error}"
+        )
+
+        return None
 
     issues = []
 
-    for item in data["items"]:
+    for item in data.get("items", []):
 
         issues.append({
-            "title": item["title"],
-            "repo": item["repository_url"]
-                .split("repos/")[-1],
-            "url": item["html_url"]
+            "title": item.get("title", "Sin título"),
+            "repo": (
+                item.get("repository_url", "repos/desconocido")
+                .split("repos/")[-1]
+            ),
+            "url": item.get("html_url", "Sin URL")
         })
 
     set_cache(cache_key, issues)
@@ -232,7 +264,7 @@ async def get_user_prs_mergeados(usuario):
     if response.status_code == 403:
 
         logging.warning(
-            f"GitHub API rate limit reached."
+            "GitHub API rate limit reached."
         )
 
         return "rate_limit"
@@ -241,29 +273,42 @@ async def get_user_prs_mergeados(usuario):
         
         logging.error(
             f"GitHub API returned status "
-            f"{response.status_code}"
+            f"{response.status_code}: "
+            f"{response.text}"
         )
         
         return None
     
-    data = response.json()
+    try:
+
+        data = response.json()
+
+    except ValueError as error:
+
+        logging.error(
+            f"Invalid GitHub JSON response: {error}"
+        )
+
+        return None
 
     prs_mergeados = []
 
-    for item in data["items"]:
+    for item in data.get("items", []):
 
         pull_request = item.get("pull_request", {})
 
         if (
-            item["state"] == "closed"
+            item.get("state") == "closed"
             and pull_request.get("merged_at")
         ):
             
             prs_mergeados.append({
-                "title": item["title"],
-                "repo": item["repository_url"]
-                    .split("repos/")[-1],
-                "url": item["html_url"]
+                "title": item.get("title", "Sin título"),
+                "repo": (
+                    item.get("repository_url", "repos/desconocido")
+                    .split("repos/")[-1]
+                ),
+                "url": item.get("html_url", "Sin URL")
             })
 
     set_cache(cache_key, prs_mergeados)
