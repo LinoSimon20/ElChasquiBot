@@ -5,11 +5,19 @@ ULTIMO_USO = {}
 TIEMPO_COOLDOWN = 15
 
 
-def verificar_cooldown(user_id):
+def verificar_cooldown(
+    user_id,
+    comando
+):
+
+    clave = (
+        user_id,
+        comando
+    )
 
     ahora = time.time()
 
-    ultima_vez = ULTIMO_USO.get(user_id)
+    ultima_vez = ULTIMO_USO.get(clave)
 
     if ultima_vez:
 
@@ -21,6 +29,6 @@ def verificar_cooldown(user_id):
         if restante > 0:
             return int(restante)
 
-    ULTIMO_USO[user_id] = ahora
+    ULTIMO_USO[clave] = ahora
 
     return 0

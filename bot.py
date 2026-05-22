@@ -154,7 +154,8 @@ async def mis_comentarios(
     telegram_id = update.effective_user.id
 
     cooldown = verificar_cooldown(
-    update.effective_user.id
+        telegram_id,
+        "/mis_comentarios"
     )
 
     if cooldown > 0:
@@ -240,7 +241,10 @@ async def mis_issues(
 
     telegram_id = update.effective_user.id
 
-    cooldown = verificar_cooldown(telegram_id)
+    cooldown = verificar_cooldown(
+        telegram_id,
+        "/mis_issues"
+    )
 
     if cooldown > 0:
 
@@ -317,7 +321,10 @@ async def mi_estado(
     
     telegram_id = update.effective_user.id
 
-    cooldown = verificar_cooldown(telegram_id)
+    cooldown = verificar_cooldown(
+        telegram_id,
+        "/mi_estado"
+    )
 
     if cooldown > 0:
 
