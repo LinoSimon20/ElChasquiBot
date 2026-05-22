@@ -36,10 +36,51 @@ logging.basicConfig(
 )
 
 logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("telegram.ext").setLevel(logging.WARNING)
 
 def log_accion(usuario, accion):
+
+    usuario = usuario or "Desconocido"
+
     logging.info(
         f"{accion} ejecutada por: {usuario}"
+    )
+
+async def manejar_error(
+    update: object,
+    context: ContextTypes.DEFAULT_TYPE
+):
+    
+    usuario = "Desconocido"
+
+    if update and hasattr(update, "effective_user"):
+
+        if update.effective_user:
+
+            usuario = (
+                update.effective_user.username
+                or str(update.effective_user.id)
+            )
+
+    logging.error(
+        "━━━━━━━━━━━━━━━━━━━━"
+    )
+
+    logging.error(
+        f"Error detectado para usuario: {usuario}"
+    )
+
+    logging.error(
+        f"Error: {context.error}"
+    )
+
+    logging.error(
+        "Traceback completo:",
+        exc_info=context.error
+    )
+
+    logging.error(
+        "━━━━━━━━━━━━━━━━━━━━"
     )
 
 async def enviar_mensajes_largos(
@@ -79,6 +120,13 @@ async def start(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
+
+    usuario = (
+        update.effective_user.username
+        or str(update.effective_user.id)
+    )
+
+    log_accion(usuario, "/start")
 
     await update.message.reply_text(
         "¡Hola!.\nSoy ChasquiBot, tu mensajero que recopilara todos los mensajes que dejaste en los Issues de proyectos de GitHub en los que colaboras.\n\n"
@@ -500,6 +548,10 @@ def main():
             "desvincular",
             desvincular
         )
+    )
+
+    app.add_error_handler(
+        manejar_error
     )
 
     logging.info("Iniciando ElChasquiBot...")
