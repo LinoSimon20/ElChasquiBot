@@ -69,7 +69,30 @@ El usuario visualiza sus issues asignadas.
 
 ---
 
-## CU-04 Desvincular cuenta GitHub
+## CU-04 Consultar estado general
+
+### Descripción
+
+Permite visualizar el estado general actual al usuario.
+
+### Actor principal
+
+Usuario
+
+### Flujo principal
+
+1. El usuario ejecuta `/mi_estado`
+2. El sistema consulta GitHub API
+3. El sistema obtiene el estado general
+4. El bot muestra resultados
+
+### Resultado esperado
+
+El usuario visualiza su estado actual de GitHub.
+
+---
+
+## CU-05 Desvincular cuenta GitHub
 
 ### Descripción
 

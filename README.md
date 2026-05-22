@@ -13,6 +13,10 @@ El bot funciona vinculando un usuario de GitHub con una cuenta de Telegram y pos
 * Vinculación de cuenta GitHub mediante nombre de usuario
 * Consulta de comentarios recientes realizados en issues
 * Consulta de issues asignadas al usuario
+* Consulta de estado de GitHub del usuario
+    * Issues asignadas
+    * Comentarios
+    * Pull Requests mergeados
 * Sistema multiusuario
 * Cooldown para evitar spam
 * Manejo automático de mensajes largos
@@ -26,11 +30,12 @@ El bot funciona vinculando un usuario de GitHub con una cuenta de Telegram y pos
 | Comando               | Descripción                                        |
 | --------------------- | -------------------------------------------------- |
 | `/start`              | Mensaje de bienvenida                              |
-| `/ayuda`              | Lista de comandos disponibles                      |
 | `/vincular <usuario>` | Vincula una cuenta GitHub                          |
-| `/desvincular`        | Elimina la vinculación actual                      |
 | `/mis_comentarios`    | Muestra comentarios recientes realizados en issues |
 | `/mis_issues`         | Muestra issues asignadas al usuario                |
+| `/mi_estado`          | Muestra el estado de GitHub del usuario            |
+| `/ayuda`              | Lista de comandos disponibles                      |
+| `/desvincular`        | Elimina la vinculación actual                      |
 
 ---
 
@@ -65,6 +70,8 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+Asegúrate de usar Python 3.10+
+
 ### 4. Configurar variables de entorno
 
 Crear archivo `.env`
@@ -85,7 +92,7 @@ python3 bot.py
 ## Estructura general del proyecto
 
 ```text
-elchasquibot/
+ElChasquiBot/
 ├── bot.py
 ├── github_api.py
 ├── database.py
@@ -113,7 +120,6 @@ Proyecto desarrollado con fines educativos y de aprendizaje.
 * Caché avanzada
 * Base de datos PostgreSQL
 * Deploy en VPS cloud
-* Estadísticas de contribución
 * Sistema de notificaciones
 * Dockerización
 * Panel web administrativo
