@@ -2,7 +2,7 @@ import httpx
 import os
 import logging
 
-from cache import get_cache, set_cache
+from bot.utils.cache import get_cache, set_cache
 from dotenv import load_dotenv
 
 load_dotenv()

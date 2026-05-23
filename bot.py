@@ -6,18 +6,18 @@ from telegram.ext import (
 )
 
 from dotenv import load_dotenv
-from cooldown import verificar_cooldown
+from bot.utils.cooldown import verificar_cooldown
 
 import os, logging, time
 
-from database import (
+from bot.db.database import (
     iniciar_database,
     guardar_usuario,
     obtener_usuario,
     eliminar_usuario
 )
 
-from github_api import (
+from github.client import (
     github_user_exists,
     get_user_comentarios,
     get_issues_asignados,
