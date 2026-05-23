@@ -91,22 +91,30 @@ python3 bot.py
 
 ## Estructura general del proyecto
 
-```text
+```txt
 ElChasquiBot/
 ├── bot.py
-├── github_api.py
-├── database.py
-├── cache.py
-├── cooldown.py
 ├── requirements.txt
-├── users.db
-└── docs/
-    ├── arquitectura.md
-    ├── casos-de-uso.md
-    ├── requerimientos.md
-    └── seguridad.md
+├── .env.example
+├── CHANGELOG.md
+│
+├── bot/
+│   ├── handlers/
+│   ├── utils/
+│   ├── services/
+│   └── db/
+│
+├── github/
+│   └── client.py
+│
+├── docs/
+│   ├── arquitectura.md
+│   ├── casos-de-uso.md
+│   ├── requerimientos.md
+│   └── seguridad.md
+│
+└── users.db
 ```
-
 ---
 
 ## Licencia

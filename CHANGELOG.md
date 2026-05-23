@@ -6,6 +6,30 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
 
 ---
 
+## [1.1.0] - 2026-05-22
+
+### Added
+
+- Arquitectura modular del proyecto
+- Separación de handlers, utilidades, base de datos y capa de GitHub API
+- Módulo dedicado para logging
+- Utilidades reutilizables para manejo de mensajes
+- Ejecución paralela de solicitudes a GitHub usando `asyncio.gather`
+
+### Changed
+
+- Refactorización de `bot.py` monolítico a componentes modulares
+- Mejora de rendimiento en `/mi_estado` mediante solicitudes concurrentes
+- Mejor organización interna y mantenibilidad del código
+
+### Fixed
+
+- Prevención de crashes causados por respuestas incompletas de la API
+- Mejora de resiliencia ante respuestas JSON inválidas
+- Corrección de múltiples casos límite relacionados con campos faltantes en la API
+
+---
+
 ## [1.0.0] - 2026-05-22
 
 ### Added
