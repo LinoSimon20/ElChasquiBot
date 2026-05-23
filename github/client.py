@@ -3,11 +3,7 @@ import os
 import logging
 
 from bot.utils.cache import get_cache, set_cache
-from dotenv import load_dotenv
-
-load_dotenv()
-
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+from bot.services.config import GITHUB_TOKEN
 
 if not GITHUB_TOKEN:
     raise ValueError(
