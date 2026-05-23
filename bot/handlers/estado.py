@@ -1,3 +1,5 @@
+import asyncio
+
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -17,95 +19,48 @@ async def mi_estado(
 
     telegram_id = update.effective_user.id
 
-    cooldown = verificar_cooldown(
-        telegram_id,
-        "/mi_estado"
-    )
+    cooldown = verificar_cooldown(telegram_id, "/mi_estado")
 
     if cooldown > 0:
-
         await update.message.reply_text(
             f"Espera {cooldown}s antes de usar este comando nuevamente."
         )
-
         return
 
     usuario = obtener_usuario(telegram_id)
 
     if not usuario:
-
         await update.message.reply_text(
             "Primero usa /vincular para ver tu estado."
         )
-
         return
 
     log_accion(usuario, "/mi_estado")
 
-    issues = await get_issues_asignados(usuario)
+    issues, comentarios, prs = await asyncio.gather(
+        get_issues_asignados(usuario),
+        get_user_comentarios(usuario),
+        get_user_prs_mergeados(usuario)
+    )
 
-    if issues == "rate_limit":
-
+    if "rate_limit" in (issues, comentarios, prs):
         await update.message.reply_text(
             "GitHub rate limit alcanzado, intentalo nuevamente mas tarde."
         )
-
         return
 
-    if issues is None:
-
+    if None in (issues, comentarios, prs):
         await update.message.reply_text(
-            "GitHub no respondió al obtener las issues."
+            "GitHub no respondió correctamente, intentalo más tarde."
         )
-
         return
-
-    comentarios = await get_user_comentarios(usuario)
-
-    if comentarios == "rate_limit":
-
-        await update.message.reply_text(
-            "GitHub rate limit alcanzado, intentalo nuevamente mas tarde."
-        )
-
-        return
-
-    if comentarios is None:
-
-        await update.message.reply_text(
-            "GitHub no respondió al obtener los comentarios."
-        )
-
-        return
-
-    prs = await get_user_prs_mergeados(usuario)
-
-    if prs == "rate_limit":
-
-        await update.message.reply_text(
-            "GitHub rate limit alcanzado, intentalo nuevamente mas tarde."
-        )
-
-        return
-
-    if prs is None:
-
-        await update.message.reply_text(
-            "GitHub no respondió al obtener los pull requests."
-        )
-
-        return
-
-    total_issues = len(issues)
-    total_comentarios = len(comentarios)
-    total_prs = len(prs)
 
     mensaje = (
         f"🏆 Estado de {usuario}:\n\n"
         "━━━━━━━━━━━━━━━━━━━━\n\n"
-        f"🐛 Issues asignadas: {total_issues}\n\n"
-        f"💬 Comentarios: {total_comentarios}\n\n"
-        f"🔀 Pull Requests mergeados: {total_prs}\n\n"
+        f"🐛 Issues asignadas: {len(issues or [])}\n\n"
+        f"💬 Comentarios: {len(comentarios or [])}\n\n"
+        f"🔀 Pull Requests mergeados: {len(prs or [])}\n\n"
         "━━━━━━━━━━━━━━━━━━━━\n\n"
     )
 
