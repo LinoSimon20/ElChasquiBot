@@ -21,6 +21,3 @@ if not BOT_TOKEN:
 
 if not GITHUB_TOKEN:
     raise ValueError("GITHUB_TOKEN no esta definido en el archivo .env")
-
-if not APP_URL:
-    raise ValueError("APP_URL no esta definido en el archivo .env")
