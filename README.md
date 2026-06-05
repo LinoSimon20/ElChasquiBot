@@ -79,6 +79,8 @@ Crear archivo `.env`
 ```env
 BOT_TOKEN=TU_TOKEN
 GITHUB_TOKEN=TU_TOKEN_GITHUB
+APP_URL=https://tu_dominio.com
+PORT=8080
 ```
 
 ### 5. Ejecutar bot
@@ -113,7 +115,8 @@ ElChasquiBot/
 │   ├── requerimientos.md
 │   └── seguridad.md
 │
-└── users.db
+└── web
+    └── server.py
 ```
 ---
 
