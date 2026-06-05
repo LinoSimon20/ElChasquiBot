@@ -98,15 +98,21 @@ async def main():
 
     try:
         await app.initialize()
-        await app.start()
+
         if WEBHOOK_URL:
-            await app.bot.set_webhook(WEBHOOK_URL)
-            logging.info(f"Webhook configurado en {WEBHOOK_URL}")
-        logging.info("ElChasquiBot iniciado correctamente.")
-        await app.updater.start_polling()
+            await app.bot.set_webhook(
+                url=WEBHOOK_URL
+            )
+            logging.info(
+                f"Webhook configurado en {WEBHOOK_URL}"
+            )
+        await app.start()
+        logging.info(
+            "ElChasquiBot iniciado correctamente."
+        )
         await asyncio.Event().wait()
     finally:
-        await app.updater.stop()
+        await app.bot.delete_webhook()
         await app.stop()
         await app.shutdown()
         logging.info("ElChasquiBot detenido.")
