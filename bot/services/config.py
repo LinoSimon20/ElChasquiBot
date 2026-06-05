@@ -6,7 +6,7 @@ load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 PORT = int(os.getenv("PORT", 8080))
-APP_URL = os.getenv("APP_URL")
+APP_URL = os.getenv("APP_URL", "").rstrip("/")
 
 WEBHOOK_PATH = "/webhook"
 
