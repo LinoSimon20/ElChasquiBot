@@ -1,8 +1,10 @@
+import asyncio
+
 from telegram.ext import (
     ApplicationBuilder,
-    CommandHandler,
-    ContextTypes
+    CommandHandler
 )
+
 from bot.services.config import BOT_TOKEN
 
 from bot.handlers.start import start
@@ -14,9 +16,9 @@ from bot.handlers.ayuda import ayuda
 from bot.handlers.desvincular import desvincular
 from bot.utils.logger import manejar_error
 from bot.db.database import iniciar_database
+from bot.web.server import iniciar_web_server
 
 import logging, time
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -25,11 +27,11 @@ logging.basicConfig(
     force=True
 )
 
-
-
-def main():
+async def main():
 
     iniciar_database()
+
+    await iniciar_web_server()
 
     app = (
         ApplicationBuilder()
@@ -90,9 +92,18 @@ def main():
     )
 
     logging.info("Iniciando ElChasquiBot...")
-    time.sleep(1)
-    logging.info("ElChasquiBot iniciado...")
-    app.run_polling()
+
+    try:
+        await app.initialize()
+        await app.start()
+        logging.info("ElChasquiBot iniciado correctamente.")
+        await app.updater.start_polling()
+        await asyncio.Event().wait()
+    finally:
+        await app.updater.stop()
+        await app.stop()
+        await app.shutdown()
+        logging.info("ElChasquiBot detenido.")
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
