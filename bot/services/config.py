@@ -8,10 +8,10 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 PORT = int(os.getenv("PORT", 8080))
 APP_URL = os.getenv("APP_URL")
 
-WEEBHOOK_PATH = "/webhook"
+WEBHOOK_PATH = "/webhook"
 
-WEEBHOOK_URL = (
-    f"{APP_URL}{WEEBHOOK_PATH}"
+WEBHOOK_URL = (
+    f"{APP_URL}{WEBHOOK_PATH}"
     if APP_URL
     else None
 )

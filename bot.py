@@ -5,7 +5,10 @@ from telegram.ext import (
     CommandHandler
 )
 
-from bot.services.config import BOT_TOKEN
+from bot.services.config import (
+    BOT_TOKEN,
+    WEBHOOK_URL
+)
 
 from bot.handlers.start import start
 from bot.handlers.vincular import vincular
@@ -96,6 +99,9 @@ async def main():
     try:
         await app.initialize()
         await app.start()
+        if WEBHOOK_URL:
+            await app.bot.set_webhook(WEBHOOK_URL)
+            logging.info(f"Webhook configurado en {WEBHOOK_URL}")
         logging.info("ElChasquiBot iniciado correctamente.")
         await app.updater.start_polling()
         await asyncio.Event().wait()
