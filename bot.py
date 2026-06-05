@@ -31,13 +31,13 @@ async def main():
 
     iniciar_database()
 
-    await iniciar_web_server()
-
     app = (
         ApplicationBuilder()
         .token(BOT_TOKEN)
         .build()
     )
+
+    await iniciar_web_server(app)
 
     app.add_handler(
         CommandHandler(

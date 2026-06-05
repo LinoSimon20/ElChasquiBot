@@ -1,5 +1,6 @@
 import logging
 from aiohttp import web
+from telegram import Update
 from bot.services.config import PORT
 
 logger = logging.getLogger(__name__)
@@ -7,8 +8,19 @@ logger = logging.getLogger(__name__)
 async def salud(request):
     return web.Response(text="OK", status=200)
 
-async def iniciar_web_server():
+async def manejar_webhook(request):
+    datos = await request.json()
+    bot_app = request.app["bot_app"]
+    actualizar = Update.de_json(
+        datos,
+        bot_app.bot
+    )
+    await bot_app.process_update(actualizar)
+    return web.Response(text="OK", status=200)
+
+async def iniciar_web_server(bot_app):
     app = web.Application()
+    app["bot_app"] = bot_app
     app.router.add_get("/", salud)
     app.router.add_get("/health", salud)
     runner = web.AppRunner(app)
