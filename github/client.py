@@ -236,18 +236,74 @@ async def get_user_prs_mergeados(usuario):
     
     url = (
         "https://api.github.com/search/issues"
-        f"?q=type:pr+author:{usuario}"
+        f"?q=type:pr+author:{usuario}+is:merged"
+        f"&per_page=100"
     )
+
+    prs_mergeados = []
+    pagina = 1
 
     try:
 
         async with httpx.AsyncClient() as client:
 
-            response = await client.get(
-                url,
-                headers=HEADERS,
-                timeout=10
-            )
+            while True:
+                paginated_url = url + f"&page={pagina}"
+
+                response = await client.get(
+                    paginated_url,
+                    headers=HEADERS,
+                    timeout=10
+                )
+
+                if response.status_code == 403:
+
+                    logging.warning(
+                        "GitHub API rate limit reached."
+                    )
+
+                    return "rate_limit"
+                
+                if response.status_code != 200:
+                    
+                    logging.error(
+                        f"GitHub API returned status "
+                        f"{response.status_code}: "
+                        f"{response.text}"
+                    )
+                    
+                    return None
+    
+                try:
+
+                    data = response.json()
+
+                except ValueError as error:
+
+                    logging.error(
+                        f"Invalid GitHub JSON response: {error}"
+                    )
+
+                    return None
+                
+                items = data.get("items", [])
+
+                for item in items:
+                        
+                    prs_mergeados.append({
+                        "title": item.get("title", "Sin título"),
+                        "repo": (
+                            item.get("repository_url", "repos/desconocido")
+                            .split("repos/")[-1]
+                        ),
+                        "url": item.get("html_url", "Sin URL")
+                    })
+
+                total = data.get("total_count", 0)
+                if len(prs_mergeados) >= total or len(items) < 100:
+                    break
+
+                pagina += 1
 
     except httpx.RequestError as error:
 
@@ -256,56 +312,6 @@ async def get_user_prs_mergeados(usuario):
         )
 
         return None
-    
-    if response.status_code == 403:
-
-        logging.warning(
-            "GitHub API rate limit reached."
-        )
-
-        return "rate_limit"
-    
-    if response.status_code != 200:
-        
-        logging.error(
-            f"GitHub API returned status "
-            f"{response.status_code}: "
-            f"{response.text}"
-        )
-        
-        return None
-    
-    try:
-
-        data = response.json()
-
-    except ValueError as error:
-
-        logging.error(
-            f"Invalid GitHub JSON response: {error}"
-        )
-
-        return None
-
-    prs_mergeados = []
-
-    for item in data.get("items", []):
-
-        pull_request = item.get("pull_request", {})
-
-        if (
-            item.get("state") == "closed"
-            and pull_request.get("merged_at")
-        ):
-            
-            prs_mergeados.append({
-                "title": item.get("title", "Sin título"),
-                "repo": (
-                    item.get("repository_url", "repos/desconocido")
-                    .split("repos/")[-1]
-                ),
-                "url": item.get("html_url", "Sin URL")
-            })
 
     set_cache(cache_key, prs_mergeados)
 
