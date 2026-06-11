@@ -39,7 +39,6 @@ async def github_user_exists(usuario):
 
     return response.status_code == 200
 
-
 async def get_user_comentarios(usuario):
 
     url = (
@@ -104,10 +103,13 @@ async def get_user_comentarios(usuario):
 
     for event in events:
 
-        if event.get("type") not in [
-            "IssueCommentEvent",
-            "PullRequestReviewCommentEvent"
-        ]:
+        if event.get("type") != "IssueCommentEvent":
+            continue
+
+        payload = event.get("payload", {})
+        issue = payload.get("issue", {})
+
+        if issue.get("pull_request"):
             continue
 
         repo = (
@@ -115,21 +117,17 @@ async def get_user_comentarios(usuario):
             .get("name", "Repositorio desconocido")
         )
 
-        payload = event.get("payload", {})
-
         comment_body = (
             payload.get("comment", {})
             .get("body", "Sin comentario")
         )
-
-        issue = payload.get("issue", {})
 
         title = issue.get(
             "title",
             "Sin título"
         )
 
-        url = issue.get(
+        issue_url = issue.get(
             "html_url",
             "Sin URL"
         )
@@ -138,13 +136,12 @@ async def get_user_comentarios(usuario):
             "repo": repo,
             "title": title,
             "comment": comment_body,
-            "url": url
+            "url": issue_url
         })
 
     set_cache(cache_key, comentarios)
     
     return comentarios
-
 
 async def get_issues_asignados(usuario):
     
