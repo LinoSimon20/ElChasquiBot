@@ -54,6 +54,14 @@ async def mi_estado(
             "GitHub no respondió correctamente, intentalo más tarde."
         )
         return
+    
+    puntos_maximos = 60
+    prs_totales = 50
+
+    total_puntos = min(
+        (len(prs) * puntos_maximos) / prs_totales,
+        puntos_maximos
+    )
 
     mensaje = (
         f"🏆 Estado de {usuario}:\n\n"
@@ -61,6 +69,7 @@ async def mi_estado(
         f"🐛 Issues asignadas: {len(issues or [])}\n\n"
         f"💬 Comentarios: {len(comentarios or [])}\n\n"
         f"🔀 Pull Requests mergeados: {len(prs or [])}\n\n"
+        f"🏆 Puntaje Final: {total_puntos:.2f}\n\n"
         "━━━━━━━━━━━━━━━━━━━━\n\n"
     )
 
